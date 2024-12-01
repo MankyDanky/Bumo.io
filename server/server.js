@@ -42,8 +42,10 @@ function unitVector(a) {
 
 io.on('connection', (socket) => {
     console.log('a user connected');
+    // Initialize player in player table
     players[socket.id] = {x: 1000, y: 1000, vX: 0, vY: 0, size: playerSize, aY: false, aX: false, spawned: false, name: "", color: "black", borderColor: "black"};
     
+    // Spawn player
     socket.on('spawn', (data) => {
         console.log(data.name);
         players[socket.id].spawned = true;
@@ -53,6 +55,7 @@ io.on('connection', (socket) => {
         players[socket.id].borderColor = playerBorderColors[index];
     });
 
+    // Accelerate player
     socket.on('accelerate', (data) => {
         players[socket.id].vX = Math.max(Math.min(players[socket.id].vX + data.dvX, maxV), -maxV);
         players[socket.id].vY = Math.max(Math.min(players[socket.id].vY + data.dvY, maxV), -maxV);
@@ -60,6 +63,11 @@ io.on('connection', (socket) => {
         if (data.dvX != 0) players[socket.id].aX = true;
     });
 
+    socket.on('knockedOut', (data) => {
+        players[socket.id] = {x: 1000, y: 1000, vX: 0, vY: 0, size: playerSize, aY: false, aX: false, spawned: false, name: "", color: "black", borderColor: "black"};
+    });
+
+    // Delete player from player table
     socket.on('disconnect', () => {
         console.log('a user disconnected');
         delete players[socket.id];
@@ -77,48 +85,50 @@ setInterval(function(){
             players[id].y += players[id].vY;
 
             // Collision detection
-            for (let id2 in players) {  
-                if (id2 != id) {
-                    const x1 = players[id].x;
-                    const x2 = players[id2].x;
-                    const y1 = players[id].y;
-                    const y2 = players[id2].y;
-                    const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2)
-
-                    // Clipping
-                    if (distance < 2*playerSize) {
-                        let theta = Math.asin((y1-y2)/distance);
-                        if (x1 < x2) {
-                            theta = Math.PI-theta;
+            for (let id2 in players) { 
+                if (players[id2].spawned)  {
+                    if (id2 != id) {
+                        const x1 = players[id].x;
+                        const x2 = players[id2].x;
+                        const y1 = players[id].y;
+                        const y2 = players[id2].y;
+                        const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2)
+    
+                        // Clipping
+                        if (distance < 2*playerSize) {
+                            let theta = Math.asin((y1-y2)/distance);
+                            if (x1 < x2) {
+                                theta = Math.PI-theta;
+                            }
+                            
+                            const xn = x2 + Math.cos(theta)*playerSize*2;
+                            const yn = y2 + Math.sin(theta)*playerSize*2;
+                            players[id].x = xn;
+                            players[id].y = yn;
+    
+                            // Collision solution
+                            let impulseMaginitude = 0;
+                            const v1 = Math.sqrt(players[id].vX**2 + players[id].vY**2);
+                            const v2 = Math.sqrt(players[id2].vX**2 + players[id2].vY**2);
+    
+                            if (v1 != 0) {
+                                impulseMaginitude += dotProduct(unitVector([players[id].vX, players[id].vY]), unitVector([players[id2].x-players[id].x, players[id2].y-players[id].y]))*v1;
+                            }
+                            if (v2 != 0) {
+                                impulseMaginitude += dotProduct(unitVector([players[id2].vX, players[id2].vY]), unitVector([players[id].x-players[id2].x, players[id].y-players[id2].y]))*v2;
+                            }
+                            
+                            console.log(impulseMaginitude);
+                            const v2Y = players[id].vY - (Math.sin(theta) * impulseMaginitude)/2;
+                            const v1Y = players[id2].vY + (Math.sin(theta) * impulseMaginitude)/2;
+                            const v2X = players[id].vX - (Math.cos(theta) * impulseMaginitude)/2;
+                            const v1X = players[id2].vX + (Math.cos(theta) * impulseMaginitude)/2;
+    
+                            players[id].vX = v1X;
+                            players[id].vY = v1Y;
+                            players[id2].vX = v2X;
+                            players[id2].vY = v2Y;
                         }
-                        
-                        const xn = x2 + Math.cos(theta)*playerSize*2;
-                        const yn = y2 + Math.sin(theta)*playerSize*2;
-                        players[id].x = xn;
-                        players[id].y = yn;
-
-                        // Collision solution
-                        let impulseMaginitude = 0;
-                        const v1 = Math.sqrt(players[id].vX**2 + players[id].vY**2);
-                        const v2 = Math.sqrt(players[id2].vX**2 + players[id2].vY**2);
-
-                        if (v1 != 0) {
-                            impulseMaginitude += dotProduct(unitVector([players[id].vX, players[id].vY]), unitVector([players[id2].x-players[id].x, players[id2].y-players[id].y]))*v1;
-                        }
-                        if (v2 != 0) {
-                            impulseMaginitude += dotProduct(unitVector([players[id2].vX, players[id2].vY]), unitVector([players[id].x-players[id2].x, players[id].y-players[id2].y]))*v2;
-                        }
-                        
-                        console.log(impulseMaginitude);
-                        const v2Y = players[id].vY - (Math.sin(theta) * impulseMaginitude)/2;
-                        const v1Y = players[id2].vY + (Math.sin(theta) * impulseMaginitude)/2;
-                        const v2X = players[id].vX - (Math.cos(theta) * impulseMaginitude)/2;
-                        const v1X = players[id2].vX + (Math.cos(theta) * impulseMaginitude)/2;
-
-                        players[id].vX = v1X;
-                        players[id].vY = v1Y;
-                        players[id2].vX = v2X;
-                        players[id2].vY = v2Y;
                     }
                 }
             }

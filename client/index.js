@@ -36,7 +36,7 @@ document.addEventListener('keyup', (event) => {
     if (event.key == 'a') aDown = false;
 });
 
-// Draw
+// Update display from server data
 socket.on('state', (players)=>{
     context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -113,11 +113,18 @@ socket.on('state', (players)=>{
         context.strokeStyle="rgb(168, 42, 42)";
         context.stroke();
         
+        // Check if player is knocked out
+        if (localPlayer.x + localPlayer.size > 2000 || localPlayer.x - localPlayer.size < 0 || localPlayer.y + localPlayer.size > 2000 || localPlayer.y - localPlayer.size < 0) {
+            menu.classList.remove('hidden');
+            socket.emit("knockedOut");
+        }
     }
 });
 
 let framerate = 60
 setInterval(function(){
+
+    // Movement
     let dvY = 0;
     let dvX = 0;
 
@@ -130,4 +137,5 @@ setInterval(function(){
     else if (dDown) dvX = 0.1;
 
     socket.emit('accelerate', {dvX: dvX, dvY: dvY})
+
 }, 1000/framerate);
