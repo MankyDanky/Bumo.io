@@ -11,7 +11,9 @@ const io = socketIo(server);
 const maxV = 5;
 const playerSize = 30;
 const playerColors = ["rgb(66, 139, 255)", "rgb(255, 167, 66)", "rgb(66, 255, 123)", "rgb(255, 236, 66)", "rgb(255, 88, 66)", "rgb(153, 51, 255)"];
-const playerBorderColors = ["rgb(47, 102, 189)", "rgb(209, 137, 54)", "rgb(49, 196, 93)", "rgb(222, 205, 55)", "rgb(212, 71, 53)", "rgb(115, 38, 191)"]
+const playerBorderColors = ["rgb(47, 102, 189)", "rgb(209, 137, 54)", "rgb(49, 196, 93)", "rgb(222, 205, 55)", "rgb(212, 71, 53)", "rgb(115, 38, 191)"];
+let players = {};
+let pellets = [];
 
 // Provide static files
 app.use(express.static( path.join(__dirname, '../', '/client/')));
@@ -23,11 +25,8 @@ app.get('/', (req, res) => {
 
 // Listen for connections on port 2000
 server.listen(2000, ()=> {
-    console.log('Server is up on: 2000')
+    console.log('Server is up on: 2000');
 })
-
-// Player data
-let players = {}
 
 // Dot production function
 function dotProduct(a,b) {
@@ -63,6 +62,7 @@ io.on('connection', (socket) => {
         if (data.dvX != 0) players[socket.id].aX = true;
     });
 
+    // Knock out player
     socket.on('knockedOut', (data) => {
         players[socket.id] = {x: 1000, y: 1000, vX: 0, vY: 0, size: playerSize, aY: false, aX: false, spawned: false, name: "", color: "black", borderColor: "black"};
     });
@@ -95,7 +95,7 @@ setInterval(function(){
                         const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2)
     
                         // Clipping
-                        if (distance < 2*playerSize) {
+                        if (distance < players[id2].size + players[id].size) {
                             let theta = Math.asin((y1-y2)/distance);
                             if (x1 < x2) {
                                 theta = Math.PI-theta;
@@ -118,7 +118,6 @@ setInterval(function(){
                                 impulseMaginitude += dotProduct(unitVector([players[id2].vX, players[id2].vY]), unitVector([players[id].x-players[id2].x, players[id].y-players[id2].y]))*v2;
                             }
                             
-                            console.log(impulseMaginitude);
                             const v2Y = players[id].vY - (Math.sin(theta) * impulseMaginitude)/2;
                             const v1Y = players[id2].vY + (Math.sin(theta) * impulseMaginitude)/2;
                             const v2X = players[id].vX - (Math.cos(theta) * impulseMaginitude)/2;
@@ -130,9 +129,27 @@ setInterval(function(){
                             players[id2].vY = v2Y;
                         }
                     }
+
+                    
                 }
             }
-            
+
+            // Pellet collection
+            let i = 0;
+            while (i < pellets.length) {
+                const x1 = players[id].x;
+                const x2 = pellets[i].x;
+                const y1 = players[id].y;
+                const y2 = pellets[i].y;
+                const distance = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+                if (distance < players[id].size + 8) {
+                    pellets.splice(i, 1);
+                    players[id].size += 1;
+                } else {
+                    i ++
+                }
+            }
+
             // Friction
             players[id].vX*=0.98
             players[id].vY*=0.98
@@ -142,5 +159,11 @@ setInterval(function(){
         }
     }
 
-    io.emit('state', players);
+    // Spawn food randomly
+    if (Math.random() > 0.999) {
+        pellets.push({x: Math.random() * 1999 + 1, y: Math.random() * 1999 + 1});
+    }
+
+    // Provide clients server data
+    io.emit('state', {players: players, pellets: pellets});
 }, 1000/framerate);

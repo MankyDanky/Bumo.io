@@ -37,10 +37,12 @@ document.addEventListener('keyup', (event) => {
 });
 
 // Update display from server data
-socket.on('state', (players)=>{
+socket.on('state', (data)=>{
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     // Drawing constants
+    players = data.players;
+    pellets = data.pellets;
     localPlayer = players[socket.id];
     centerX = canvas.width/2;
     centerY = canvas.height/2;
@@ -66,6 +68,21 @@ socket.on('state', (players)=>{
         context.moveTo(centerX - localPlayer.x, centerY + i - localPlayer.y);
         context.lineTo(centerX + 2000 - localPlayer.x, centerY + i - localPlayer.y);
         context.strokeStyle = "rgb(186, 186, 186)";
+        context.stroke();
+    }
+
+    // Draw pellets
+    for (let i = 0; i < pellets.length; i++) {
+        pellet = pellets[i];
+        console.log(pellet);
+        drawX = canvas.width/2 + pellet.x - localPlayer.x;
+        drawY = canvas.height/2 + pellet.y- localPlayer.y;
+        context.beginPath();
+        context.arc(drawX, drawY, 8, 0, 2 * Math.PI);
+        context.fillStyle = "white";
+        context.fill();
+        context.lineWidth = 4;
+        context.strokeStyle = "black";
         context.stroke();
     }
 
@@ -100,8 +117,6 @@ socket.on('state', (players)=>{
             context.strokeText(player.name, drawX, drawY);
             context.fillText(player.name, drawX, drawY);
         }
-
-        
         
         // Draw border
         context.beginPath();
@@ -113,6 +128,8 @@ socket.on('state', (players)=>{
         context.strokeStyle="rgb(168, 42, 42)";
         context.stroke();
         
+        
+
         // Check if player is knocked out
         if (localPlayer.x + localPlayer.size > 2000 || localPlayer.x - localPlayer.size < 0 || localPlayer.y + localPlayer.size > 2000 || localPlayer.y - localPlayer.size < 0) {
             menu.classList.remove('hidden');
