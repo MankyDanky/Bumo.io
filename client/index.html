@@ -9,12 +9,28 @@
     <body>
         <div id="menu">
             <h1 id="titleHeader">Bumo.io</h1>
+            <h2 id="highScore">High Score: 0</h2>
             <form id="menuForm" action="javascript:void(0);">
                 <input type="text" id="nameInput">
                 <input type="submit" id="playButton" value="Play">
             </form>
         </div>
         <canvas id="gameCanvas"></canvas>
+        <div id="score" class="hidden">
+            <p id="scoreText">
+                Score: 0
+            </p>
+        </div>
+        <div id="leaderboard" class="hidden">
+            <h1 id="leaderboardTitle">Leaderboard</h1>
+            <table id = "leaderboardTable">
+                <tr>
+                    <th>Player</th>
+                    <th>Score</th>
+                </tr>
+            </table>
+            
+        </div>
         <script src="/socket.io/socket.io.js"></script>
         <script type="text/javascript" src="./index.js"></script>
     </body>

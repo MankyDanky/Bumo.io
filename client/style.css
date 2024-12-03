@@ -25,6 +25,15 @@ body {
     filter: drop-shadow(0px 1.5vh 0px rgba(0, 0, 0, 0.2));
 }
 
+#highScore {
+    margin: 0;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-weight: bold;
+    font-size: 5vw;
+    color: rgb(255, 255, 255);;
+    filter: drop-shadow(0px 1vh 0px rgba(0, 0, 0, 0.2));
+}
+
 #playButton {
     position: absolute;
     top: 70%;
@@ -70,9 +79,78 @@ body {
     filter: drop-shadow(0px 1vh 0px rgba(0, 0, 0, 0.2));
 }
 
-#menu.hidden{
-    opacity: 0;
-    display: none;
+#leaderboard {
+    position: absolute;
+    width: 12vw;
+    height: 30vh;
+    top: 2%;
+    left: 86%;
+    background-color: rgb(85, 150, 255);
+    border-radius: 1vw;
+    z-index: 5;
+    padding: none;
+    margin: none;
+    filter: drop-shadow(0px 1.5vh 0px rgba(0, 0, 0, 0.2));
+}
+
+table {
+    margin: auto;
+    
+}
+
+#leaderboardTitle {
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-weight: bold;
+    font-size: 1.5vw;
+    text-align: center;
+    color: white;
+    margin-bottom: 0;
+}
+
+th {
+    margin-top: 0;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-weight: bold;
+    font-size: 1vw;
+    padding-top: 1vw;
+    text-align: left;
+    color: white;
+    padding-left: 1vw;
+    padding-right: 1vw;
+}
+
+td {
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-weight: bold;
+    font-size: 0.5vw;
+    padding-top: 1vw;
+    text-align: left;
+    color: white;
+    padding-left: 1vw;
+    padding-right: 1vw;
+}
+
+#score {
+    position: absolute;
+    width: 12vw;
+    height: 6vh;
+    top: 90%;
+    left: 2%;
+    background-color: rgb(85, 150, 255);
+    border-radius: 1vw;
+    z-index: 5;
+    padding: none;
+    margin: none;
+    filter: drop-shadow(0px 1.5vh 0px rgba(0, 0, 0, 0.2));
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-weight: normal;
+    font-size: 2vh;
+    text-align: center;
+    color: white;
+}
+
+.hidden {
+    display: none
 }
 
 canvas {

@@ -42,16 +42,16 @@ function unitVector(a) {
 io.on('connection', (socket) => {
     console.log('a user connected');
     // Initialize player in player table
-    players[socket.id] = {x: 1000, y: 1000, vX: 0, vY: 0, size: playerSize, aY: false, aX: false, spawned: false, name: "", color: "black", borderColor: "black"};
+    players[socket.id] = {x: 1000, y: 1000, vX: 0, vY: 0, size: playerSize, aY: false, aX: false, spawned: false, name: "", color: "black", borderColor: "black", lastHit: socket.id, score: 0};
     
     // Spawn player
     socket.on('spawn', (data) => {
-        console.log(data.name);
         players[socket.id].spawned = true;
         players[socket.id].name = data.name;
         const index = Math.floor(Math.random() * 6);
         players[socket.id].color = playerColors[index];
         players[socket.id].borderColor = playerBorderColors[index];
+        io.emit('score', socket.id, 0, players);
     });
 
     // Accelerate player
@@ -64,7 +64,12 @@ io.on('connection', (socket) => {
 
     // Knock out player
     socket.on('knockedOut', (data) => {
-        players[socket.id] = {x: 1000, y: 1000, vX: 0, vY: 0, size: playerSize, aY: false, aX: false, spawned: false, name: "", color: "black", borderColor: "black"};
+        if (players[socket.id].spawned) {
+            players[players[socket.id].lastHit].score += 1;
+            players[socket.id] = {x: 1000, y: 1000, vX: 0, vY: 0, size: playerSize, aY: false, aX: false, spawned: false, name: "", color: "black", borderColor: "black", lastHit: players[socket.id].lastHit, score: 0};
+            io.emit('score', players[socket.id].lastHit,  players[players[socket.id].lastHit].score, players)
+            players[socket.id].lastHit = socket.id;
+        }
     });
 
     // Delete player from player table
@@ -101,8 +106,8 @@ setInterval(function(){
                                 theta = Math.PI-theta;
                             }
                             
-                            const xn = x2 + Math.cos(theta)*playerSize*2;
-                            const yn = y2 + Math.sin(theta)*playerSize*2;
+                            const xn = x2 + Math.cos(theta)*(players[id2].size + players[id].size);
+                            const yn = y2 + Math.sin(theta)*(players[id2].size + players[id].size);
                             players[id].x = xn;
                             players[id].y = yn;
     
@@ -118,15 +123,17 @@ setInterval(function(){
                                 impulseMaginitude += dotProduct(unitVector([players[id2].vX, players[id2].vY]), unitVector([players[id].x-players[id2].x, players[id].y-players[id2].y]))*v2;
                             }
                             
-                            const v2Y = players[id].vY - (Math.sin(theta) * impulseMaginitude)/2;
-                            const v1Y = players[id2].vY + (Math.sin(theta) * impulseMaginitude)/2;
-                            const v2X = players[id].vX - (Math.cos(theta) * impulseMaginitude)/2;
-                            const v1X = players[id2].vX + (Math.cos(theta) * impulseMaginitude)/2;
+                            const v2Y = players[id].vY - (Math.sin(theta) * impulseMaginitude)*players[id].size/players[id2].size;
+                            const v1Y = players[id2].vY + (Math.sin(theta) * impulseMaginitude)*players[id2].size/players[id].size;
+                            const v2X = players[id].vX - (Math.cos(theta) * impulseMaginitude)*players[id].size/players[id2].size;
+                            const v1X = players[id2].vX + (Math.cos(theta) * impulseMaginitude)*players[id2].size/players[id].size;
     
                             players[id].vX = v1X;
                             players[id].vY = v1Y;
                             players[id2].vX = v2X;
                             players[id2].vY = v2Y;
+                            players[id].lastHit = id2;
+                            players[id2].lastHit = id;
                         }
                     }
 
@@ -160,7 +167,7 @@ setInterval(function(){
     }
 
     // Spawn food randomly
-    if (Math.random() > 0.999) {
+    if (Math.random() > 0.99) {
         pellets.push({x: Math.random() * 1999 + 1, y: Math.random() * 1999 + 1});
     }
 
