@@ -227,7 +227,7 @@ socket.on('state', (data)=>{
         // Check if player is knocked out
         if (localPlayer.x + localPlayer.size > 2000 || localPlayer.x - localPlayer.size < 0 || localPlayer.y + localPlayer.size > 2000 || localPlayer.y - localPlayer.size < 0) {
             menu.classList.remove('hidden');
-            score.classList.add('hidden');
+            score.classList.add('hiddegin');
             leaderboard.classList.add('hidden');
             // Update highscore
             if (localStorage.getItem("highScore") != null) {

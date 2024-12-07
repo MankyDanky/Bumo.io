@@ -123,10 +123,10 @@ setInterval(function(){
                                 impulseMaginitude += dotProduct(unitVector([players[id2].vX, players[id2].vY]), unitVector([players[id].x-players[id2].x, players[id].y-players[id2].y]))*v2;
                             }
                             
-                            const v2Y = players[id].vY - (Math.sin(theta) * impulseMaginitude)*players[id].size/players[id2].size;
-                            const v1Y = players[id2].vY + (Math.sin(theta) * impulseMaginitude)*players[id2].size/players[id].size;
-                            const v2X = players[id].vX - (Math.cos(theta) * impulseMaginitude)*players[id].size/players[id2].size;
-                            const v1X = players[id2].vX + (Math.cos(theta) * impulseMaginitude)*players[id2].size/players[id].size;
+                            const v2Y = players[id].vY - (Math.sin(theta) * impulseMaginitude)*players[id].size/15;
+                            const v1Y = players[id2].vY + (Math.sin(theta) * impulseMaginitude)*players[id2].size/15;
+                            const v2X = players[id].vX - (Math.cos(theta) * impulseMaginitude)*players[id].size/15;
+                            const v1X = players[id2].vX + (Math.cos(theta) * impulseMaginitude)*players[id2].size/15;
     
                             players[id].vX = v1X;
                             players[id].vY = v1Y;
